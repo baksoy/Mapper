@@ -1,5 +1,6 @@
 package com.thinkful.mapper;
 
+import android.graphics.Color;
 import android.location.Location;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
@@ -9,19 +10,23 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.GoogleApiClient.ConnectionCallbacks;
 import com.google.android.gms.common.api.GoogleApiClient.OnConnectionFailedListener;
+import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.location.LocationListener;
+import com.google.android.gms.maps.model.Polyline;
+import com.google.android.gms.maps.model.PolylineOptions;
+import java.util.List;
 
 
 public class MapsActivity extends FragmentActivity implements ConnectionCallbacks, OnConnectionFailedListener, LocationListener {
 
     private GoogleMap mMap; // Might be null if Google Play services APK is not available.
     private GoogleApiClient mGoogleApiClient;
+    protected Location mLastLocation;
 
 
     @Override
@@ -48,7 +53,6 @@ public class MapsActivity extends FragmentActivity implements ConnectionCallback
         Location mCurrentLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
 
         showLocation(mCurrentLocation);
-
         startLocationUpdates();
     }
 
@@ -146,9 +150,18 @@ public class MapsActivity extends FragmentActivity implements ConnectionCallback
     protected void showLocation(Location mCurrentLocation){
         if(mCurrentLocation != null){
             LatLng latLng = new LatLng(mCurrentLocation.getLatitude(), mCurrentLocation.getLongitude());
-            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 10));
+            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 21));
+//          mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
         }
         Log.i("Where am I", "Latitude : " + mCurrentLocation.getLatitude() + " Longtitude : " + mCurrentLocation.getLongitude());
+
+        if(mLastLocation != null){
+            PolylineOptions polyLineOptions = new PolylineOptions()
+                        .add(new LatLng(mCurrentLocation.getLatitude(), mCurrentLocation.getLongitude()))
+                        .add(new LatLng(mLastLocation.getLatitude(), mLastLocation.getLongitude()));
+            mMap.addPolyline(polyLineOptions);
+        }
+        mLastLocation = mCurrentLocation;
     }
 
     protected void startLocationUpdates() {
@@ -158,4 +171,5 @@ public class MapsActivity extends FragmentActivity implements ConnectionCallback
         mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
         LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);
     }
+
 }
